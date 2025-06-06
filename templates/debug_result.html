@@ -1,0 +1,90 @@
+
+<!-- templates/debug_result.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado Debug - Clasificador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .result {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .confidence-bar {
+            background: #e9ecef;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        .btn:hover { background: #0056b3; }
+        .image-preview {
+    max-width: 100%;
+    margin-top: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Resultado del Análisis</h1>
+        
+        <div class="result">
+            
+
+            <h2>{{ result.class_name }}</h2>
+            <p><strong>ID de Clase:</strong> {{ result.class_id }}</p>
+            <p><strong>Confianza:</strong> {{ result.confidence }}%</p>
+            
+            
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width: {{ result.confidence }}%">
+                    {{ result.confidence }}%
+                </div>
+            </div>
+        </div>
+        
+        <a href="/" class="btn">🔙 Analizar Otra Imagen</a>
+        </div>
+</body>
+</html>

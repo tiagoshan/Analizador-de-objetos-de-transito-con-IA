@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Clasificador de Objetos de Tráfico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background-color: #e0f7e9;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+
+        .status.error {
+            background-color: #fdecea;
+            color: #c62828;
+            border: 1px solid #e53935;
+        }
+
+        .alert {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .alert-error {
+            background-color: #fff3f3;
+            color: #c62828;
+            border: 1px solid #e53935;
+        }
+
+        form {
+            margin-top: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px 20px;
+            background: rgba(102, 126, 234, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: rgba(118, 75, 162, 0.1);
+            transform: translateY(-2px);
+            border-color: #764ba2;
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .info-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .supported-objects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            text-align: left;
+        }
+
+        .object-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #555;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+        .image-preview {
+    max-width: 100%;
+    margin-top: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚦 Clasificador de Objetos de Tráfico</h1>
+            <p>Sube una imagen y nuestro modelo de IA identificará vehículos, señales y personas automáticamente.</p>
+        </div>
+
+        <div class="status {% if model_loaded %}success{% else %}error{% endif %}">
+            {% if model_loaded %}
+                ✅ Modelo cargado correctamente
+            {% else %}
+                ❌ Modelo NO cargado - Revisa los logs
+            {% endif %}
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-error">❌ {{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if model_loaded %}
+        <form method="POST" enctype="multipart/form-data" action="/predict" id="uploadForm">
+            <div class="upload-area" id="drop-zone">
+                <h3>📁 Subir Imagen para Análisis</h3>
+                <input type="file" id="file-input" name="file" accept="image/*" required style="margin: 20px 0; display:none;">
+                <img id="preview" class="image-preview" src="" alt="Vista previa" style="display:none;">
+                <button type="submit" class="submit-btn">🔍 Analizar Imagen</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-error">
+            <h3>⚠️ No se puede procesar imágenes</h3>
+            <p>Revisa:</p>
+            <ul style="text-align: left; margin-top: 10px;">
+                <li>¿Existe el archivo <code>my_traffic_object_model.h5</code>?</li>
+                <li>¿Está en el directorio correcto?</li>
+                <li>¿El archivo no está corrupto?</li>
+                <li>¿Tienes las dependencias correctas instaladas?</li>
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="info-section">
+            <h3>Objetos Detectables:</h3>
+            <div class="supported-objects">
+                <div class="object-item">🚲 Bicicleta</div>
+                <div class="object-item">🚗 Automóvil</div>
+                <div class="object-item">30️⃣ Límite 30 km/h</div>
+                <div class="object-item">🚶 Persona</div>
+                <div class="object-item">🛑 Señal de Stop</div>
+                <div class="object-item">🚦 Semáforo</div>
+                <div class="object-item">🚛 Camión</div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+    const loading = document.getElementById('loading');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('preview');
+    const uploadArea = document.querySelector('.upload-area');
+
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function () {
+            loading.style.display = 'block';
+        });
+    }
+
+    {% if not model_loaded %}
+    setTimeout(() => {
+        location.reload();
+    }, 30000);
+    {% endif %}
+
+    // Previsualización al seleccionar archivo
+    fileInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = '';
+            preview.style.display = 'none';
+        }
+    });
+
+    // Manejo de arrastrar y soltar
+    uploadArea.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.style.background = 'rgba(118, 75, 162, 0.2)';
+    });
+
+    uploadArea.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+    });
+
+    uploadArea.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            fileInput.files = e.dataTransfer.files; // Asigna el archivo al input
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }});
+
+    </script>
+</body>
+</html>
