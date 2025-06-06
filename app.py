@@ -253,8 +253,12 @@ def predict():
             flash("Error: no se pudo realizar la predicción")
             return redirect(url_for('home'))
         
-        # Preparar resultado
-        class_name = CLASS_NAMES.get(predicted_class, f"Clase {predicted_class}")
+                # Preparar resultado
+        if confidence < 0.7:
+            class_name = "No se pudo reconocer el objeto con suficiente confianza"
+        else:
+            class_name = CLASS_NAMES.get(predicted_class, f"Clase {predicted_class}")
+
         result = {
             'class_id': int(predicted_class),
             'class_name': class_name,
