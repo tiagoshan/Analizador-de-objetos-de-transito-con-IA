@@ -69,16 +69,16 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
     logger.info(f"📁 Carpeta {UPLOAD_FOLDER} creada")
 
-# Mapeo de clases - AJUSTAR SEGÚN TU MODELO
+# Mapeo de clases 
 CLASS_NAMES = {
     0: "Bicicleta",
     1: "Carro", 
     2: "Límite de velocidad",
     3: "Persona",
-    4: "Carro",
+    4: "STOP",
     5: "Semaforo",
     6: "Camion"
-    # Agregar más según tu modelo
+
 }
 
 def allowed_file(filename):
@@ -254,7 +254,7 @@ def predict():
             return redirect(url_for('home'))
         
                 # Preparar resultado
-        if confidence < 0.7:
+        if confidence < 0.8:
             class_name = "No se pudo reconocer el objeto con suficiente confianza"
         else:
             class_name = CLASS_NAMES.get(predicted_class, f"Clase {predicted_class}")
@@ -329,4 +329,4 @@ def test_prediction():
 if __name__ == '__main__':
     logger.info(f"🚀 Iniciando aplicación Flask en modo debug")
     logger.info(f"📊 Estado del modelo: {'✅ Cargado' if model else '❌ No cargado'}")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8000)
